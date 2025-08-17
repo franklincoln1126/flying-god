@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>灵心一炷香 | 在线祈福</title>
+  <style>
+    :root{
+      --bg1:#fff7e6;
+      --bg2:#fde7b0;
+      --primary:#8a2be2;
+      --primary-weak:#b285ff;
+      --accent:#ff5fa2;
+      --ok:#1aa96b;
+      --text:#2e2e2e;
+      --muted:#666;
+      --card:#ffffffee;
+    }
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",Ubuntu,Arial,sans-serif;}
+    .wrap{max-width:720px;margin:auto;padding:24px 16px 80px;}
+    .card{background:var(--card);backdrop-filter: blur(4px); border:1px solid #00000010; border-radius:18px; box-shadow:0 10px 24px #00000010; padding:18px; margin:16px 0;}
+    h1{font-size:28px;margin:8px 0 4px; text-align:center;}
+    .subtitle{color:var(--muted); text-align:center; margin-bottom:14px;}
+    .qrcode{display:flex; flex-direction:column; align-items:center; gap:8px;}
+    .qrcode img{width:240px; max-width:70vw; border-radius:14px; box-shadow:0 8px 20px #00000018;}
+    .amounts{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:6px;}
+    .chip{padding:8px 12px; border-radius:999px; background:#fff; border:1px solid #00000010;}
+    .confirm{display:grid; gap:10px;}
+    .confirm label{display:flex; align-items:flex-start; gap:10px; line-height:1.4;}
+    .upload{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    input[type="file"]{border:1px dashed #00000030; padding:10px; border-radius:10px; background:#fff;}
+    #preview{max-height:120px; border-radius:10px; display:none; box-shadow:0 6px 16px #00000015;}
+    .btn{
+      width:100%; padding:16px; font-size:18px; border:none; border-radius:12px;
+      color:#fff; background:linear-gradient(135deg,var(--primary),var(--accent));
+      cursor:pointer; transition:transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+      box-shadow:0 10px 24px #ff5fa233;
+    }
+    .btn:disabled{opacity:.5; cursor:not-allowed; box-shadow:none;}
+    .blessing{font-size:18px; text-align:center; padding:12px; border-left:4px solid var(--primary-weak); background:#ffffffc9; border-radius:10px; display:none;}
+    footer{position:fixed; bottom:0; left:0; right:0; background:#ffffffd8; backdrop-filter: blur(8px); border-top:1px solid #00000010;}
+    .foot-in{max-width:720px; margin:auto; padding:10px 16px; display:flex; align-items:center; justify-content:center; gap:8px;}
+    .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent); box-shadow:0 0 12px #ff5fa2;}
+    .brand{font-weight:700; letter-spacing:.08em;}
+    .tag{color:var(--muted); font-size:13px;}
+    .hint{font-size:13px; color:var(--muted); text-align:center;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🪔 灵心一炷香</h1>
+    <div class="subtitle">点一炷心香 · 所愿皆成｜香火随缘 · 全额用于公益</div>
+
+    <!-- 收款区 -->
+    <section class="card">
+      <h3 style="margin:6px 0 10px;">① 扫码随缘上香</h3>
+      <div class="qrcode">
+        <!-- TODO: 替换为你的收款码图片地址 -->
+        <img src="WechatIMG11767.jpg" alt="微信收款二维码">
+        <div class="amounts">
+          <span class="chip">￥1.88 护身平安香</span>
+          <span class="chip">￥6.66 顺顺利利香</span>
+          <span class="chip">￥9.99 旺运转运香</span>
+        </div>
+        <div class="hint">扫码完成后，请在下方勾选“我已完成支付”，并上传支付截图解锁祈福按钮。</div>
+      </div>
+    </section>
+
+    <!-- 支付确认区 -->
+    <section class="card confirm">
+      <h3 style="margin:6px 0 4px;">② 支付确认</h3>
+      <label><input type="checkbox" id="paidCheck"> 我已完成支付，并自愿将香火钱用于公益。</label>
+
+      <div class="upload">
+        <input type="file" id="proof" accept="image/*" />
+        <img id="preview" alt="支付截图预览">
+      </div>
+      <div class="hint">上传仅用于人工核对（本地预览，不会自动上传到服务器）。</div>
+    </section>
+
+    <!-- 祈福按钮 -->
+    <section class="card">
+      <h3 style="margin:6px 0 10px;">③ 一键祈福</h3>
+      <button class="btn" id="prayBtn" disabled>🌸 点我祈福</button>
+      <div id="blessing" class="blessing"></div>
+      <div class="hint" style="margin-top:8px;">完成①②后按钮将自动解锁</div>
+    </section>
+  </div>
+
+  <!-- 页脚：飞香计划 logo 字样 -->
+  <footer>
+    <div class="foot-in">
+      <span class="logo-dot"></span>
+      <span class="brand">飞香计划</span>
+      <span class="tag">Feixiang Initiative · since 2025</span>
+    </div>
+  </footer>
+
+  <script>
+    // 祝福语池（可自行增删）
+    const WISHES = [
+      "🎉 祈福成功！愿你所求皆如愿，所行皆坦途。",
+      "🌸 福至心灵，吉祥常伴，万事顺意。",
+      "🧧 好运将至，贵人相助，心安即是归处。",
+      "✨ 光明照耀前路，愿你勇敢而柔软。",
+      "💝 平安喜乐，健康顺遂，家人安康。"
+    ];
+
+    const paidCheck = document.getElementById('paidCheck');
+    const proof = document.getElementById('proof');
+    const preview = document.getElementById('preview');
+    const prayBtn = document.getElementById('prayBtn');
+    const blessing = document.getElementById('blessing');
+
+    // 简易“门槛”逻辑：勾选 + 有截图 才解锁按钮
+    function updateGate() {
+      const hasProof = proof.files && proof.files.length > 0;
+      prayBtn.disabled = !(paidCheck.checked && hasProof);
+    }
+
+    paidCheck.addEventListener('change', updateGate);
+    proof.addEventListener('change', e => {
+      updateGate();
+      // 预览截图（仅本地显示，不上传）
+      if (proof.files && proof.files[0]) {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          preview.src = ev.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(proof.files[0]);
+      } else {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+    });
+
+    // 点击祈福 → 随机祝福语
+    prayBtn.addEventListener('click', () => {
+      const msg = WISHES[Math.floor(Math.random() * WISHES.length)];
+      blessing.textContent = msg;
+      blessing.style.display = 'block';
+      // 小动画
+      prayBtn.style.transform = 'scale(0.98)';
+      setTimeout(()=> prayBtn.style.transform='scale(1)',120);
+    });
+  </script>
+</body>
+</html>
